@@ -112,9 +112,9 @@ export function HelpPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <p className="text-[10px] font-bold tracking-[0.22em] text-white/55 uppercase">Help / Docs</p>
-        <h1 className="mt-1 max-w-2xl text-[28px] font-semibold tracking-tight text-white">
+        <h1 className="mt-1 max-w-2xl text-[22px] font-semibold tracking-tight text-white md:text-[28px]">
           Seconds-scale house odds. Stake $ZEC. Get paid in stock.
         </h1>
         <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-white/50">

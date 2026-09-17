@@ -53,7 +53,7 @@ export function Markets() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-5">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 md:px-6 md:py-5">
       <div className="shrink-0">
         <p className="text-[10px] font-bold tracking-[0.22em] text-white/55 uppercase">Markets</p>
         <p className="mt-1 text-sm text-white/45">Tap a stock to trade.</p>

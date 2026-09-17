@@ -13,7 +13,7 @@ export function BuyZecButton({ size = "header" }: { size?: "header" | "block" })
   const className =
     size === "block"
       ? "flex h-12 w-full items-center justify-center rounded-full bg-white text-[13px] font-bold tracking-[0.06em] text-black"
-      : `${glass} h-12 rounded-full px-4 text-sm font-semibold text-white`;
+      : `${glass} h-10 rounded-full px-3 text-xs font-semibold text-white md:h-12 md:px-4 md:text-sm`;
 
   if (ready) {
     return (

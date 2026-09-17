@@ -54,10 +54,11 @@ export function LiveChart({ series, strike, liveOpenI, candles = [], crowd = [] 
       if (!ctx || series.length < 2) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const padL = 92;
-      const padR = 36;
-      const padT = 18;
-      const padB = 18;
+      const compact = w < 720;
+      const padL = compact ? 56 : 92;
+      const padR = compact ? 12 : 36;
+      const padT = compact ? 12 : 18;
+      const padB = compact ? 12 : 18;
       const plotW = w - padL - padR;
       const plotH = h - padT - padB;
       const { xZoom, yZoom } = view.current;
@@ -97,8 +98,8 @@ export function LiveChart({ series, strike, liveOpenI, candles = [], crowd = [] 
 
       ctx.strokeStyle = grid;
       ctx.lineWidth = 1;
-      const rows = Math.max(16, Math.round(plotH / 18));
-      ctx.font = '11px "IBM Plex Sans", Inter, sans-serif';
+      const rows = Math.max(compact ? 10 : 16, Math.round(plotH / (compact ? 22 : 18)));
+      ctx.font = `${compact ? 9 : 11}px "IBM Plex Sans", Inter, sans-serif`;
       ctx.textAlign = "right";
       for (let i = 0; i <= rows; i++) {
         const gy = padT + (plotH * i) / rows;
@@ -108,7 +109,7 @@ export function LiveChart({ series, strike, liveOpenI, candles = [], crowd = [] 
         ctx.stroke();
         const pv = hi - ((hi - lo) * i) / rows;
         ctx.fillStyle = ink;
-        ctx.fillText(pv.toFixed(5), padL - 8, gy + 4);
+        ctx.fillText(pv.toFixed(compact ? 4 : 5), padL - 6, gy + 3);
       }
 
       if (strike != null) {
@@ -246,10 +247,10 @@ export function LiveChart({ series, strike, liveOpenI, candles = [], crowd = [] 
   return (
     <div className="relative h-full w-full min-h-0" ref={wrapRef}>
       <canvas className="block h-full w-full" ref={canvasRef} />
-      <div className="absolute right-2 bottom-3 z-10 flex flex-col overflow-hidden rounded-full border border-white/15 bg-black/55">
+      <div className="absolute right-2 bottom-3 z-10 flex flex-col overflow-hidden rounded-full border border-white/15 bg-black/55 max-md:bottom-2 max-md:right-1">
         <button
           type="button"
-          className="h-8 w-8 text-lg leading-none text-white/80 hover:bg-white/10 hover:text-white"
+          className="h-10 w-10 text-lg leading-none text-white/80 hover:bg-white/10 hover:text-white md:h-8 md:w-8"
           onClick={() => zoomRef.current(1.18)}
           aria-label="Zoom in"
         >
@@ -257,7 +258,7 @@ export function LiveChart({ series, strike, liveOpenI, candles = [], crowd = [] 
         </button>
         <button
           type="button"
-          className="h-8 w-8 text-lg leading-none text-white/80 hover:bg-white/10 hover:text-white"
+          className="h-10 w-10 text-lg leading-none text-white/80 hover:bg-white/10 hover:text-white md:h-8 md:w-8"
           onClick={() => zoomRef.current(1 / 1.18)}
           aria-label="Zoom out"
         >

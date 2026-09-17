@@ -43,9 +43,9 @@ const glass =
 
 function StockMark({ symbol }: { symbol: string }) {
   const src = LOGOS[symbol];
-  if (src) return <img src={src} alt="" className="h-8 w-8 rounded-lg bg-white object-contain" />;
+  if (src) return <img src={src} alt="" className="h-7 w-7 rounded-lg bg-white object-contain md:h-8 md:w-8" />;
   return (
-    <b className="grid h-8 w-8 place-items-center rounded-lg bg-white text-sm text-black">{symbol[0]}</b>
+    <b className="grid h-7 w-7 place-items-center rounded-lg bg-white text-sm text-black md:h-8 md:w-8">{symbol[0]}</b>
   );
 }
 
@@ -79,17 +79,18 @@ function WalletButton() {
   }, [open]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 md:gap-2">
       <BuyZecButton />
       {!isConnected && (
-        <button className={`${glass} h-12 rounded-full px-5 text-sm font-semibold text-white`} onClick={() => openAppKit()}>
-          {t(lang, "connect")}
+        <button className={`${glass} h-10 rounded-full px-3 text-xs font-semibold text-white md:h-12 md:px-5 md:text-sm`} onClick={() => openAppKit()}>
+          <span className="md:hidden">Connect</span>
+          <span className="hidden md:inline">{t(lang, "connect")}</span>
         </button>
       )}
       {isConnected && (
       <div className="relative" ref={menuRef}>
         <button
-          className={`${glass} grid h-12 w-12 place-items-center rounded-full text-white ${open ? "bg-white/15" : ""}`}
+          className={`${glass} grid h-10 w-10 place-items-center rounded-full text-white md:h-12 md:w-12 ${open ? "bg-white/15" : ""}`}
           onClick={() => setOpen((v) => !v)}
           aria-label="Profile"
           aria-expanded={open}
@@ -322,38 +323,38 @@ export function App() {
   return (
     <>
       {booting && <Splash onDone={() => setBooting(false)} />}
-      <div id="desk" className="grid h-full overflow-hidden bg-black text-[#f2f2f2] [grid-template-columns:88px_1fr]">
-        <aside className="z-[6] flex h-full min-h-0 flex-col items-center border-r border-white/10 bg-black px-2 pt-4 pb-3">
-          <img className="brand-logo mb-1 h-12 w-12 shrink-0 object-contain" src="/logo.png" alt="Zeconds" />
-          <nav className="flex min-h-0 w-full flex-1 flex-col justify-evenly">
+      <div id="desk" className="grid h-full overflow-hidden bg-black text-[#f2f2f2] max-md:grid-cols-1 max-md:grid-rows-[minmax(0,1fr)_auto] md:grid-cols-[88px_minmax(0,1fr)]">
+        <aside className="z-[6] flex min-h-0 items-center border-white/10 bg-black max-md:order-2 max-md:h-[calc(3.75rem+env(safe-area-inset-bottom))] max-md:w-full max-md:flex-row max-md:border-t max-md:px-1 max-md:pt-1 max-md:pb-[env(safe-area-inset-bottom)] md:h-full md:flex-col md:border-r md:px-2 md:pt-4 md:pb-3">
+          <img className="brand-logo mb-1 h-12 w-12 shrink-0 object-contain max-md:hidden" src="/logo.png" alt="Zeconds" />
+          <nav className="flex min-h-0 w-full flex-1 max-md:flex-row max-md:items-center max-md:justify-around md:flex-col md:justify-evenly">
             {railItems.map((item) => (
               <button
                 key={item.id}
-                className={`group relative grid h-12 w-full shrink-0 place-items-center rounded-[14px] ${
+                className={`group relative grid shrink-0 place-items-center rounded-[14px] max-md:h-11 max-md:w-11 md:h-12 md:w-full ${
                   tab === item.id ? "bg-white/10 text-white" : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
                 }`}
                 onClick={() => setTab(item.id)}
                 aria-label={item.label}
               >
                 <item.Icon className="h-6 w-6" strokeWidth={1.6} />
-                <span className="pointer-events-none absolute top-1/2 left-[calc(100%+14px)] z-10 -translate-y-1/2 rounded-lg border border-white/15 bg-neutral-900/90 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 group-hover:opacity-100">
+                <span className="pointer-events-none absolute top-1/2 left-[calc(100%+14px)] z-10 -translate-y-1/2 rounded-lg border border-white/15 bg-neutral-900/90 px-2.5 py-1.5 text-xs font-bold text-white opacity-0 group-hover:opacity-100 max-md:hidden">
                   {t(lang, item.id)}
                 </span>
               </button>
             ))}
           </nav>
-          <ZecondsWord className="-mt-0.5 w-full shrink-0 px-0.5" />
+          <ZecondsWord className="-mt-0.5 w-full shrink-0 px-0.5 max-md:hidden" />
         </aside>
 
-        <div className="relative flex h-full min-h-0 min-w-0 flex-col">
-          <header className="relative z-[7] flex h-14 items-center justify-between gap-4 overflow-visible px-4">
+        <div className="relative flex h-full min-h-0 min-w-0 flex-col max-md:order-1">
+          <header className="relative z-[7] flex items-center justify-between overflow-visible max-md:h-12 max-md:gap-2 max-md:px-2 md:h-14 md:gap-4 md:px-4">
             {tab === "trade" ? (
             <div
               ref={pairRef}
-              className={`${glass} ${picker ? "w-[280px] rounded-[22px]" : "rounded-full"} mt-1 self-start overflow-hidden`}
+              className={`${glass} ${picker ? "w-[min(280px,calc(100vw-7.5rem))] rounded-[22px]" : "rounded-full"} mt-1 max-w-[min(280px,calc(100vw-8.5rem))] self-start overflow-hidden`}
             >
               <button
-                className="flex h-12 w-full items-center gap-2.5 py-0 pr-4 pl-2 text-sm font-bold tracking-wide text-white disabled:cursor-not-allowed disabled:opacity-55"
+                className="flex h-10 w-full items-center gap-2 py-0 pr-3 pl-1.5 text-sm font-bold tracking-wide text-white disabled:cursor-not-allowed disabled:opacity-55 md:h-12 md:gap-2.5 md:pr-4 md:pl-2"
                 onClick={() => {
                   setWindowOpen(false);
                   togglePicker();
@@ -362,8 +363,8 @@ export function App() {
               >
                 <StockMark symbol={stock.symbol} />
                 <span className="flex min-w-0 flex-1 flex-col items-start leading-tight">
-                  {stock.symbol} / USD
-                  <small className="text-[10px] font-medium tracking-wider text-white/55">{stock.name}</small>
+                  <span className="truncate">{stock.symbol}<span className="max-md:hidden"> / USD</span></span>
+                  <small className="hidden text-[10px] font-medium tracking-wider text-white/55 md:block">{stock.name}</small>
                 </span>
                 <span className={`text-white/70 ${picker ? "rotate-180" : ""}`}>▾</span>
               </button>
@@ -401,7 +402,7 @@ export function App() {
               <div />
             )}
             {(phase === "live" || (phase === "done" && outcome)) && (
-              <div className="pointer-events-none absolute top-1 left-1/2 z-[8] -translate-x-1/2">
+              <div className="pointer-events-none absolute top-1 left-1/2 z-[8] hidden -translate-x-1/2 md:block">
                 {phase === "live" && (
                   <div className={`${glass} flex h-12 min-w-[108px] items-center justify-center rounded-full px-5 font-[IBM_Plex_Mono,ui-monospace,monospace] text-sm tabular-nums text-white`}>
                     {timer}
@@ -425,13 +426,38 @@ export function App() {
                 )}
               </div>
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <WalletButton />
             </div>
           </header>
+          {(phase === "live" || (phase === "done" && outcome)) && (
+            <div className="flex justify-center px-2 pb-1 md:hidden">
+              {phase === "live" && (
+                <div className={`${glass} flex h-9 min-w-[96px] items-center justify-center rounded-full px-4 font-[IBM_Plex_Mono,ui-monospace,monospace] text-[12px] tabular-nums text-white`}>
+                  {timer}
+                </div>
+              )}
+              {phase === "done" && outcome && (
+                <div className={`${glass} flex flex-col items-center rounded-full px-4 py-1.5 text-white`}>
+                  {outcome === "win" && (
+                    <>
+                      <span className="text-[12px] font-semibold tabular-nums">
+                        +{payoutShares.toLocaleString(undefined, { maximumFractionDigits: 5 })} {stock.symbol}
+                      </span>
+                      <span className="text-[10px] font-medium tabular-nums text-white/55">
+                        $ZEC {payout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} after fees
+                      </span>
+                    </>
+                  )}
+                  {outcome === "lose" && <span className="text-[12px] font-semibold">Round lost</span>}
+                  {outcome === "tie" && <span className="text-[12px] font-semibold">Round even · $ZEC back</span>}
+                </div>
+              )}
+            </div>
+          )}
 
           {tab === "trade" && (
-            <div className="mx-3 mt-3 mb-2 flex min-h-0 flex-1 gap-3">
+            <div className="mx-2 mt-1 mb-1 flex min-h-0 flex-1 gap-3 md:mx-3 md:mt-3 md:mb-2">
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden rounded-xl">
               <LiveChart
@@ -442,8 +468,8 @@ export function App() {
                 crowd={crowd}
               />
             </div>
-              <div className="mt-3 mb-1 flex h-7 shrink-0 items-center justify-center gap-1.5">
-                <div className={`${glass} flex h-full w-[138px] shrink-0 items-center rounded-full px-1`}>
+              <div className="mt-2 mb-1 flex h-11 w-full shrink-0 items-center justify-center gap-1.5 md:mt-3 md:h-7">
+                <div className={`${glass} flex h-full min-w-0 flex-1 items-center rounded-full px-1 md:w-[138px] md:flex-none`}>
                   <button
                     className="h-full w-6 text-sm text-white/70"
                     onClick={() => bumpStake(-10)}
@@ -477,7 +503,7 @@ export function App() {
                   </button>
                 </div>
                 <button
-                  className="flex h-full w-[108px] shrink-0 items-center justify-center gap-1 rounded-full bg-[#c43b4a] px-3 text-white disabled:opacity-40"
+                  className="flex h-full min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#c43b4a] px-2 text-white disabled:opacity-40 md:w-[108px] md:flex-none md:px-3"
                   disabled={phase === "live" || stake < 1 || stake > zec}
                   onClick={() => {
                     if (confirmPlace && !window.confirm(`${stock.symbol} DOWN · ${windowSec}s · $ZEC ${stake}`)) return;
@@ -492,7 +518,7 @@ export function App() {
                   </svg>
                 </button>
                 <button
-                  className="flex h-full w-[108px] shrink-0 items-center justify-center gap-1 rounded-full bg-[#1fa866] px-3 text-white disabled:opacity-40"
+                  className="flex h-full min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#1fa866] px-2 text-white disabled:opacity-40 md:w-[108px] md:flex-none md:px-3"
                   disabled={phase === "live" || stake < 1 || stake > zec}
                   onClick={() => {
                     if (confirmPlace && !window.confirm(`${stock.symbol} UP · ${windowSec}s · $ZEC ${stake}`)) return;
@@ -540,7 +566,7 @@ export function App() {
                 </div>
               </div>
             </div>
-            {showLive && <TradeTape />}
+            {showLive && <div className="hidden h-full lg:flex"><TradeTape /></div>}
             </div>
           )}
 
