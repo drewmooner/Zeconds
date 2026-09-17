@@ -137,6 +137,7 @@ type TerminalState = {
   setShowLive: (v: boolean) => void;
   setDefaultWindow: (w: WindowSec) => void;
   setDefaultStake: (n: number) => void;
+  setZec: (n: number) => void;
   tickPrice: () => void;
   ingestFill: (msg: LiveFillMsg) => void;
   tickTimer: () => void;
@@ -168,7 +169,7 @@ export const useTerminal = create<TerminalState>((set, get) => {
   outcome: null,
   payout: 0,
   payoutShares: 0,
-  zec: typeof prefs.zec === "number" ? prefs.zec : 10_000,
+  zec: 0,
   holdings: {},
   history: Array.isArray(prefs.history) ? (prefs.history as TradeRecord[]) : [],
   stats: emptyStats(),
@@ -247,6 +248,7 @@ export const useTerminal = create<TerminalState>((set, get) => {
     writePrefs({ defaultStake: n });
     set({ defaultStake: n, stake: n });
   },
+  setZec: (zec) => set({ zec }),
 
   tickPrice: () => {
     const s = get();

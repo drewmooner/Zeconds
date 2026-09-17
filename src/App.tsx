@@ -440,7 +440,14 @@ export function App() {
               )}
             </div>
             ) : (
-              <div />
+              <>
+                <img
+                  className="brand-logo h-9 w-9 shrink-0 object-contain md:hidden"
+                  src="/logo.png"
+                  alt="Zeconds"
+                />
+                <div className="max-md:hidden" />
+              </>
             )}
             {(phase === "live" || (phase === "done" && outcome)) && (
               <div className="pointer-events-none absolute top-1 left-1/2 z-[8] hidden -translate-x-1/2 md:block">
@@ -504,25 +511,28 @@ export function App() {
               <LiveChart />
             </div>
               <div className="mt-2 mb-1 flex w-full shrink-0 flex-wrap items-center gap-1.5 md:mt-3 md:h-7 md:flex-nowrap md:justify-center">
-                <div className={`${glass} flex h-11 w-[6.75rem] shrink-0 items-center rounded-full px-0.5 md:h-full md:w-[148px]`}>
+                <div className="relative flex h-11 w-[9.5rem] shrink-0 items-center rounded-full px-1 md:h-full md:w-[148px] md:px-0.5">
+                  <div className={`${glass} pointer-events-none absolute inset-0 rounded-full`} />
                   <button
-                    className="h-full w-8 shrink-0 text-lg text-white/70 md:w-6 md:text-sm"
+                    className="relative z-10 h-full w-7 shrink-0 text-lg leading-none text-white md:w-6 md:text-sm"
                     onClick={() => bumpStake(-10)}
                     disabled={phase === "live"}
                   >
                     −
                   </button>
-                  <div className="flex min-w-0 flex-1 items-center justify-center">
-                    <span className="shrink-0 text-base font-semibold text-white/55 md:text-[11px]">$</span>
+                  <div className="relative z-10 h-full min-w-0 flex-1">
+                    <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center text-[16px] font-semibold tabular-nums text-white md:text-[11px]">
+                      ${stakeText === "" ? "0" : stakeText}
+                    </span>
                     <input
-                    className="h-full min-w-0 bg-transparent pr-1 pl-0.5 text-center text-base font-semibold text-white outline-none md:text-[11px]"
-                    style={{ width: `${Math.max(1, stakeText.length || 1)}ch` }}
+                    className="stake-size absolute inset-0 z-20 h-full w-full min-w-0 bg-transparent p-0 text-center text-[16px] font-semibold tabular-nums outline-none md:text-[11px]"
                     type="text"
+                    size={1}
                     inputMode="numeric"
                     pattern="[0-9]*"
                     disabled={phase === "live"}
                     value={stakeText}
-                    placeholder="0"
+                    placeholder=""
                     aria-label="Size"
                     onFocus={() => {
                       stakeFocused.current = true;
@@ -544,7 +554,7 @@ export function App() {
                   />
                   </div>
                   <button
-                    className="h-full w-8 shrink-0 text-lg text-white/70 md:w-6 md:text-sm"
+                    className="relative z-10 h-full w-7 shrink-0 text-lg leading-none text-white md:w-6 md:text-sm"
                     onClick={() => bumpStake(10)}
                     disabled={phase === "live"}
                   >

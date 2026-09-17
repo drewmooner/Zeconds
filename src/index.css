@@ -44,6 +44,13 @@ input {
   }
 }
 
+.stake-size {
+  min-width: 0;
+  color: transparent;
+  caret-color: #fff;
+  -webkit-text-fill-color: transparent;
+}
+
 html[data-theme="light"] #desk {
   filter: invert(1) hue-rotate(180deg);
 }
