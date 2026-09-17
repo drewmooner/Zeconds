@@ -37,7 +37,7 @@ export function WalletPage() {
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 md:px-6 md:py-5">
       <div className="shrink-0">
         <p className="text-[10px] font-bold tracking-[0.22em] text-white/55 uppercase">Wallet</p>
-        <p className="mt-1 text-sm text-white/45">$ZEC for calls. Wins land as the stock you picked.</p>
+        <p className="mt-1 text-sm text-white/45">ZEC is the protocol chip. Hold it to bet — nothing is staked.</p>
         {isConnected && address && (
           <p className="mt-2 font-[IBM_Plex_Mono,ui-monospace,monospace] text-[12px] tracking-[0.02em] text-white/40">
             {address.slice(0, 6)}…{address.slice(-4)}
@@ -50,7 +50,7 @@ export function WalletPage() {
           <img src="/logo.png" alt="" className="brand-logo h-8 w-8 rounded-lg object-contain" />
           <span className="min-w-0 flex-1">
             <span className="block text-[14px] font-semibold tracking-[0.04em] text-white">$ZEC</span>
-            <span className="block text-[12px] text-white/40">Stake</span>
+            <span className="block text-[12px] text-white/40">Chip</span>
           </span>
           <span className="text-[14px] font-semibold tabular-nums text-white">
             {zec.toLocaleString(undefined, { maximumFractionDigits: 2 })}

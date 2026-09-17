@@ -182,7 +182,7 @@ export const useTerminal = create<TerminalState>((set, get) => {
   lang: (["en", "es", "fr", "pt", "de", "zh", "ja"] as Lang[]).includes(prefs.lang as Lang) ? (prefs.lang as Lang) : "en",
   theme: prefs.theme === "light" ? "light" : "dark",
   sounds: prefs.sounds !== false,
-  confirmPlace: prefs.confirmPlace === true,
+  confirmPlace: prefs.confirmPlace !== false,
   showLive: prefs.showLive !== false,
   defaultWindow: ([5, 15, 30, 45, 60] as WindowSec[]).includes(prefs.defaultWindow as WindowSec)
     ? (prefs.defaultWindow as WindowSec)
@@ -254,26 +254,25 @@ export const useTerminal = create<TerminalState>((set, get) => {
     const drift = (Math.random() - 0.48) * vol;
     const spike = Math.random() < 0.06 ? (Math.random() - 0.5) * vol * 4 : 0;
     const lastPx = Math.max(0.01, s.lastPx + drift + spike);
-    const cut = s.series.length > 420 ? s.series.length - 420 : 0;
-    const series = (cut ? s.series.slice(cut) : s.series).concat(lastPx);
-    let liveOpenI = s.liveOpenI;
-    if (cut && liveOpenI != null) liveOpenI = Math.max(0, liveOpenI - cut);
-    const candles = cut
-      ? s.candles
-          .map((c) => ({ ...c, i: c.i - cut, openI: (c.openI ?? c.i) - cut }))
-          .filter((c) => c.i >= 0)
-      : s.candles;
-    let crowd = cut
-      ? s.crowd.map((b) => ({ ...b, i: b.i - cut })).filter((b) => b.i >= 0)
-      : s.crowd;
+    s.series.push(lastPx);
+    if (s.series.length > 420) {
+      const cut = s.series.length - 420;
+      s.series.splice(0, cut);
+      const liveOpenI = s.liveOpenI != null ? Math.max(0, s.liveOpenI - cut) : null;
+      set({
+        lastPx,
+        liveOpenI,
+        candles: s.candles.map((c) => ({ ...c, i: c.i - cut, openI: (c.openI ?? c.i) - cut })).filter((c) => c.i >= 0),
+        crowd: s.crowd.map((b) => ({ ...b, i: b.i - cut })).filter((b) => b.i >= 0),
+        liveHi: liveOpenI != null ? Math.max(s.liveHi, lastPx) : s.liveHi,
+        liveLo: liveOpenI != null ? Math.min(s.liveLo, lastPx) : s.liveLo,
+      });
+      return;
+    }
     set({
       lastPx,
-      series,
-      liveOpenI,
-      candles,
-      crowd,
-      liveHi: liveOpenI != null ? Math.max(s.liveHi, lastPx) : s.liveHi,
-      liveLo: liveOpenI != null ? Math.min(s.liveLo, lastPx) : s.liveLo,
+      liveHi: s.liveOpenI != null ? Math.max(s.liveHi, lastPx) : s.liveHi,
+      liveLo: s.liveOpenI != null ? Math.min(s.liveLo, lastPx) : s.liveLo,
     });
   },
 

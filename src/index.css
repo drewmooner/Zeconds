@@ -24,6 +24,18 @@ input {
   touch-action: manipulation;
 }
 
+.skel-shine {
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: skel 1.15s ease-in-out infinite;
+}
+
+@keyframes skel {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @media (max-width: 767px) {
   input,
   select,

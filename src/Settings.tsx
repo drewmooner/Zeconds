@@ -141,7 +141,10 @@ export function SettingsPage() {
         <p className="mt-8 mb-1 text-[11px] font-semibold tracking-[0.16em] text-white/35 uppercase">{t(lang, "desk")}</p>
         <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
           <div className="flex items-center justify-between py-3.5">
-            <span className="text-[14px] font-semibold text-white">{t(lang, "confirm")}</span>
+            <span>
+              <span className="block text-[14px] font-semibold text-white">{t(lang, "confirm")}</span>
+              <span className="mt-0.5 block text-[12px] text-white/40">Off until you turn it on. On = send with no confirm.</span>
+            </span>
             <Toggle on={!confirmPlace} onClick={() => setConfirmPlace(!confirmPlace)} />
           </div>
           <div className="flex items-center justify-between py-3.5">

@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useTerminal } from "./store";
+import { Skeleton } from "./Skeleton";
 
 const WALLETS = [
   "0x8f2a…c41d",
@@ -49,6 +50,13 @@ export function Leaderboard() {
   const { address } = useAccount();
   const youWallet = address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "you";
   const [day, setDay] = useState(DAYS[0].key);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setReady(false);
+    const t = window.setTimeout(() => setReady(true), 180);
+    return () => window.clearTimeout(t);
+  }, [day]);
 
   const rows = useMemo(() => {
     const you = { id: "you", you: true, wallet: youWallet, pnl: dayPnl[day] ?? 0 };
@@ -83,7 +91,15 @@ export function Leaderboard() {
       </div>
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {rows.map((row, i) => (
+        {!ready &&
+          Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="flex items-center gap-4 border-b border-white/[0.06] py-3.5">
+              <Skeleton className="h-4 w-5" />
+              <Skeleton className="h-3.5 flex-1" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          ))}
+        {ready && rows.map((row, i) => (
           <div
             key={row.id}
             className={`flex items-center gap-4 border-b border-white/[0.06] py-3.5 ${row.you ? "bg-white/[0.04]" : ""}`}

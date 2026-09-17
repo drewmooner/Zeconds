@@ -33,7 +33,7 @@ const dict: Record<Lang, Record<string, string>> = {
     liveFeed: "Show Live tape",
     liveFeedHint: "Fills on the right of Trade.",
     defaultWindow: "Default window",
-    defaultStake: "Default stake",
+    defaultStake: "Default size",
     version: "Paper desk",
   },
   es: {

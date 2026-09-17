@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { STOCKS, type Stock } from "./lib/rules";
 import { useTerminal } from "./store";
+import { Skeleton } from "./Skeleton";
 
 const LOGOS: Record<string, string> = {
   NVDA: "/logos/nvda.png",
@@ -37,7 +38,25 @@ export function Markets() {
   const pickStock = useTerminal((s) => s.pickStock);
   const setTab = useTerminal((s) => s.setTab);
   const [q, setQ] = useState("");
+  const [ready, setReady] = useState(false);
   const book = useMemo(quotes, []);
+
+  useEffect(() => {
+    let live = true;
+    const imgs = Object.values(LOGOS).map((src) => {
+      const i = new Image();
+      i.src = src;
+      return i.decode ? i.decode() : Promise.resolve();
+    });
+    Promise.allSettled(imgs).then(() => {
+      if (live) setReady(true);
+    });
+    const t = window.setTimeout(() => live && setReady(true), 500);
+    return () => {
+      live = false;
+      window.clearTimeout(t);
+    };
+  }, []);
 
   const go = (stock: Stock) => {
     pickStock(stock);
@@ -66,7 +85,18 @@ export function Markets() {
       />
 
       <div className="mt-4 min-h-0 flex-1 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {house.map((row) => {
+        {!ready &&
+          Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="flex items-center gap-3 border-b border-white/[0.06] py-3.5">
+              <Skeleton className="h-8 w-8 rounded-lg" />
+              <span className="min-w-0 flex-1">
+                <Skeleton className="h-3.5 w-16" />
+                <Skeleton className="mt-1.5 h-3 w-24" />
+              </span>
+              <Skeleton className="h-4 w-14" />
+            </div>
+          ))}
+        {ready && house.map((row) => {
           const up = row.chg >= 0;
           return (
             <button
@@ -90,7 +120,7 @@ export function Markets() {
           );
         })}
 
-        {house.length === 0 && <p className="py-8 text-sm text-white/40">Nothing matches.</p>}
+        {ready && house.length === 0 && <p className="py-8 text-sm text-white/40">Nothing matches.</p>}
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import {
   BookOpen,
   CandlestickChart,
+  Info,
   LayoutGrid,
   Settings,
   Trophy,
@@ -11,6 +12,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Splash } from "./Splash";
+import { Intro } from "./Intro";
+import { PlaceConfirm } from "./PlaceConfirm";
 import { LiveChart } from "./LiveChart";
 import { Markets } from "./Markets";
 import { WalletPage } from "./Wallet";
@@ -21,7 +24,7 @@ import { HelpPage } from "./Help";
 import { BuyZecButton } from "./BuyZec";
 import { ZecondsWord } from "./ZecondsWord";
 import { t } from "./lib/i18n";
-import { useTerminal, STOCKS, type Tab } from "./store";
+import { useTerminal, STOCKS, type Side, type Tab } from "./store";
 import { WINDOWS, oddsLabel } from "./lib/rules";
 import { disconnectAppKit, openAppKit } from "./lib/wagmi";
 import { connectLiveTape } from "./lib/liveFeed";
@@ -206,13 +209,8 @@ export function App() {
   const query = useTerminal((s) => s.query);
   const windowSec = useTerminal((s) => s.windowSec);
   const stake = useTerminal((s) => s.stake);
-  const series = useTerminal((s) => s.series);
-  const candles = useTerminal((s) => s.candles);
-  const crowd = useTerminal((s) => s.crowd);
-  const liveOpenI = useTerminal((s) => s.liveOpenI);
   const phase = useTerminal((s) => s.phase);
   const left = useTerminal((s) => s.left);
-  const startPx = useTerminal((s) => s.startPx);
   const outcome = useTerminal((s) => s.outcome);
   const payout = useTerminal((s) => s.payout);
   const payoutShares = useTerminal((s) => s.payoutShares);
@@ -235,11 +233,16 @@ export function App() {
   const theme = useTerminal((s) => s.theme);
   const sounds = useTerminal((s) => s.sounds);
   const confirmPlace = useTerminal((s) => s.confirmPlace);
+  const setConfirmPlace = useTerminal((s) => s.setConfirmPlace);
   const showLive = useTerminal((s) => s.showLive);
-  const [windowOpen, setWindowOpen] = useState(false);
+  const [gate, setGate] = useState<"splash" | "intro">("splash");
   const [stakeText, setStakeText] = useState(String(stake));
+  const [windowOpen, setWindowOpen] = useState(false);
+  const [oneTapHint, setOneTapHint] = useState(false);
+  const [pending, setPending] = useState<Side | null>(null);
   const pairRef = useRef<HTMLDivElement>(null);
   const windowRef = useRef<HTMLDivElement>(null);
+  const stakeFocused = useRef(false);
 
   useEffect(() => {
     const onPointer = (e: PointerEvent) => {
@@ -269,12 +272,22 @@ export function App() {
   }, [tab, closePicker]);
 
   useEffect(() => {
+    if (stakeFocused.current) return;
     setStakeText(stake === 0 ? "" : String(stake));
   }, [stake]);
 
   useEffect(() => {
-    const id = window.setInterval(() => useTerminal.getState().tickPrice(), 80);
-    return () => window.clearInterval(id);
+    let raf = 0;
+    let last = 0;
+    const loop = (now: number) => {
+      if (now - last >= 80) {
+        last = now;
+        useTerminal.getState().tickPrice();
+      }
+      raf = window.requestAnimationFrame(loop);
+    };
+    raf = window.requestAnimationFrame(loop);
+    return () => window.cancelAnimationFrame(raf);
   }, []);
 
   useEffect(() => connectLiveTape((msg) => useTerminal.getState().ingestFill(msg)), []);
@@ -312,6 +325,17 @@ export function App() {
     else chimeTie();
   }, [phase, outcome, sounds, rounds]);
 
+  const send = (side: Side) => {
+    if (sounds) chimePlace(side);
+    place(side);
+    setPending(null);
+  };
+
+  const askOrSend = (side: Side) => {
+    if (confirmPlace) setPending(side);
+    else send(side);
+  };
+
   const timer = useMemo(() => {
     const s = Math.max(0, left);
     const mm = String(Math.floor(s / 60)).padStart(2, "0");
@@ -322,8 +346,25 @@ export function App() {
 
   return (
     <>
-      {booting && <Splash onDone={() => setBooting(false)} />}
-      <div id="desk" className="grid h-full overflow-hidden bg-black text-[#f2f2f2] max-md:grid-cols-1 max-md:grid-rows-[minmax(0,1fr)_auto] md:grid-cols-[88px_minmax(0,1fr)]">
+      {booting && gate === "splash" && <Splash onDone={() => setGate("intro")} />}
+      {booting && gate === "intro" && <Intro onDone={() => setBooting(false)} />}
+      {pending && (
+        <PlaceConfirm
+          side={pending}
+          symbol={stock.symbol}
+          name={stock.name}
+          windowSec={windowSec}
+          stake={stake}
+          onSend={() => send(pending)}
+          onCancel={() => setPending(null)}
+        />
+      )}
+      <div
+        id="desk"
+        className={`grid h-full overflow-hidden bg-black text-[#f2f2f2] max-md:grid-cols-1 max-md:grid-rows-[minmax(0,1fr)_auto] md:grid-cols-[88px_minmax(0,1fr)] ${
+          booting && gate === "intro" ? "pointer-events-none select-none" : ""
+        }`}
+      >
         <aside className="z-[6] flex min-h-0 items-center border-white/10 bg-black max-md:order-2 max-md:h-[calc(3.75rem+env(safe-area-inset-bottom))] max-md:w-full max-md:flex-row max-md:border-t max-md:px-1 max-md:pt-1 max-md:pb-[env(safe-area-inset-bottom)] md:h-full md:flex-col md:border-r md:px-2 md:pt-4 md:pb-3">
           <img className="brand-logo mb-1 h-12 w-12 shrink-0 object-contain max-md:hidden" src="/logo.png" alt="Zeconds" />
           <nav className="flex min-h-0 w-full flex-1 max-md:flex-row max-md:items-center max-md:justify-around md:flex-col md:justify-evenly">
@@ -460,42 +501,50 @@ export function App() {
             <div className="mx-2 mt-1 mb-1 flex min-h-0 flex-1 gap-3 md:mx-3 md:mt-3 md:mb-2">
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
             <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden rounded-xl">
-              <LiveChart
-                series={series}
-                strike={phase === "live" ? startPx : null}
-                liveOpenI={liveOpenI}
-                candles={candles}
-                crowd={crowd}
-              />
+              <LiveChart />
             </div>
-              <div className="mt-2 mb-1 flex h-11 w-full shrink-0 items-center justify-center gap-1.5 md:mt-3 md:h-7">
-                <div className={`${glass} flex h-full min-w-0 flex-1 items-center rounded-full px-1 md:w-[138px] md:flex-none`}>
+              <div className="mt-2 mb-1 flex w-full shrink-0 flex-wrap items-center gap-1.5 md:mt-3 md:h-7 md:flex-nowrap md:justify-center">
+                <div className={`${glass} flex h-11 w-[6.75rem] shrink-0 items-center rounded-full px-0.5 md:h-full md:w-[148px]`}>
                   <button
-                    className="h-full w-6 text-sm text-white/70"
+                    className="h-full w-8 shrink-0 text-lg text-white/70 md:w-6 md:text-sm"
                     onClick={() => bumpStake(-10)}
                     disabled={phase === "live"}
                   >
                     −
                   </button>
-                  <label className="flex min-w-0 flex-1 items-center justify-center gap-0.5 text-white">
-                    <span className="shrink-0 text-[10px] text-white/50">$ZEC</span>
+                  <div className="flex min-w-0 flex-1 items-center justify-center">
+                    <span className="shrink-0 text-base font-semibold text-white/55 md:text-[11px]">$</span>
                     <input
-                      className="w-full min-w-0 bg-transparent text-center text-[11px] font-semibold text-white outline-none"
-                      type="text"
-                      inputMode="numeric"
-                      disabled={phase === "live"}
-                      value={stakeText}
-                      placeholder="0"
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, "");
-                        setStakeText(raw);
-                        if (raw === "") setStake(0);
-                        else setStake(Number(raw));
-                      }}
-                    />
-                  </label>
+                    className="h-full min-w-0 bg-transparent pr-1 pl-0.5 text-center text-base font-semibold text-white outline-none md:text-[11px]"
+                    style={{ width: `${Math.max(1, stakeText.length || 1)}ch` }}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    disabled={phase === "live"}
+                    value={stakeText}
+                    placeholder="0"
+                    aria-label="Size"
+                    onFocus={() => {
+                      stakeFocused.current = true;
+                    }}
+                    onBlur={() => {
+                      stakeFocused.current = false;
+                      if (stakeText === "") {
+                        setStake(0);
+                        setStakeText("");
+                      } else {
+                        setStakeText(String(stake));
+                      }
+                    }}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, "");
+                      setStakeText(raw);
+                      if (raw !== "") setStake(Number(raw));
+                    }}
+                  />
+                  </div>
                   <button
-                    className="h-full w-6 text-sm text-white/70"
+                    className="h-full w-8 shrink-0 text-lg text-white/70 md:w-6 md:text-sm"
                     onClick={() => bumpStake(10)}
                     disabled={phase === "live"}
                   >
@@ -503,13 +552,9 @@ export function App() {
                   </button>
                 </div>
                 <button
-                  className="flex h-full min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#c43b4a] px-2 text-white disabled:opacity-40 md:w-[108px] md:flex-none md:px-3"
+                  className="flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#c43b4a] px-2 text-white disabled:opacity-40 md:h-full md:w-[108px] md:flex-none md:px-3"
                   disabled={phase === "live" || stake < 1 || stake > zec}
-                  onClick={() => {
-                    if (confirmPlace && !window.confirm(`${stock.symbol} DOWN · ${windowSec}s · $ZEC ${stake}`)) return;
-                    if (sounds) chimePlace("down");
-                    place("down");
-                  }}
+                  onClick={() => askOrSend("down")}
                   aria-label="Down"
                 >
                   <span className="text-[11px] font-semibold tabular-nums">{odds}</span>
@@ -518,13 +563,9 @@ export function App() {
                   </svg>
                 </button>
                 <button
-                  className="flex h-full min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#1fa866] px-2 text-white disabled:opacity-40 md:w-[108px] md:flex-none md:px-3"
+                  className="flex h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#1fa866] px-2 text-white disabled:opacity-40 md:h-full md:w-[108px] md:flex-none md:px-3"
                   disabled={phase === "live" || stake < 1 || stake > zec}
-                  onClick={() => {
-                    if (confirmPlace && !window.confirm(`${stock.symbol} UP · ${windowSec}s · $ZEC ${stake}`)) return;
-                    if (sounds) chimePlace("up");
-                    place("up");
-                  }}
+                  onClick={() => askOrSend("up")}
                   aria-label="Up"
                 >
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
@@ -532,7 +573,46 @@ export function App() {
                   </svg>
                   <span className="text-[11px] font-semibold tabular-nums">{odds}</span>
                 </button>
-                <div className="relative h-full w-[58px] shrink-0" ref={windowRef}>
+                <div className={`${glass} relative order-last flex h-9 w-full items-center justify-between gap-2 rounded-full px-3 md:order-0 md:h-full md:w-auto md:justify-center md:gap-1.5 md:px-2.5`}>
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-white md:text-[10px] md:whitespace-nowrap">One tap bet</span>
+                    <span
+                      className="relative shrink-0"
+                      onMouseEnter={() => setOneTapHint(true)}
+                      onMouseLeave={() => setOneTapHint(false)}
+                    >
+                      <button
+                        type="button"
+                        className="grid h-4 w-4 place-items-center rounded-full border border-white/25 text-white/45 hover:text-white"
+                        aria-label="What one tap bet does"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOneTapHint((v) => !v);
+                        }}
+                      >
+                        <Info className="h-2.5 w-2.5" strokeWidth={2.4} />
+                      </button>
+                      {oneTapHint && (
+                        <span className="absolute bottom-[calc(100%+10px)] left-0 z-30 w-[min(16rem,calc(100vw-2.5rem))] rounded-xl border border-white/15 bg-black/90 px-2.5 py-2 text-left text-[11px] leading-snug text-white/70 shadow-lg md:left-1/2 md:w-44 md:-translate-x-1/2">
+                          On: Up / Down sends immediately. Off: you confirm first.
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className={`relative h-5 w-8 shrink-0 rounded-full ${!confirmPlace ? "bg-white" : "bg-white/15"}`}
+                    onClick={() => setConfirmPlace(!confirmPlace)}
+                    aria-pressed={!confirmPlace}
+                    aria-label="Toggle one tap bet"
+                  >
+                    <span
+                      className="absolute top-0.5 h-4 w-4 rounded-full bg-black"
+                      style={{ left: !confirmPlace ? 14 : 2 }}
+                    />
+                  </button>
+                </div>
+                <div className="relative h-11 w-[52px] shrink-0 md:h-full md:w-[58px]" ref={windowRef}>
                   <button
                     className={`${glass} flex h-full w-full items-center justify-center gap-0.5 rounded-full px-2 text-[11px] font-semibold text-white disabled:opacity-50`}
                     disabled={phase === "live"}

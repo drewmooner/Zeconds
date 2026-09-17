@@ -1,5 +1,6 @@
 import { LIVE_DOWN, LIVE_UP } from "./lib/liveFeed";
 import { useTerminal } from "./store";
+import { Skeleton } from "./Skeleton";
 
 const LOGOS: Record<string, string> = {
   NVDA: "/logos/nvda.png",
@@ -28,6 +29,14 @@ export function TradeTape() {
         Live
       </div>
       <div className="min-h-0 flex-1 overflow-hidden px-4">
+        {rows.length === 0 &&
+          Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="flex items-center gap-2 border-b border-white/[0.06] py-3">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-8" />
+              <Skeleton className="h-3 w-10" />
+            </div>
+          ))}
         {rows.map((row) => (
           <p
             key={row.id}
